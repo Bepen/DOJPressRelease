@@ -1,6 +1,6 @@
 import requests
 from story import Story
-from storage import fetch_prev_story, write_prev_story
+from storage import fetch_prev_story_time, write_prev_story_time
 
 url = "https://www.justice.gov/api/v1/press_releases.json"
 
@@ -25,14 +25,13 @@ def get_most_recent_story():
     response = fetch_press_releases(page)
     results = response['results']
     last_story_index = len(results) - 1
-    prev_story = fetch_prev_story()
+    prev_story = int(fetch_prev_story_time())
     last_story = results[last_story_index]
-    print("prev_story", prev_story)
-    print("last_story", last_story['number'])
-    if (prev_story == last_story['number']):
+    if (prev_story >= int(last_story['created'])):
         raise ValueError("Story already posted.")
     else:
-        write_prev_story(last_story['number'])
+        print("writing new time", last_story['created'])
+        write_prev_story_time(last_story['created'])
     return Story(last_story)
 
 
