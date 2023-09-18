@@ -10,18 +10,21 @@ access_token_secret = os.environ['access_token_secret']
 client = tweepy.Client(consumer_key=consumer_key, consumer_secret=consumer_secret, access_token=access_token, access_token_secret=access_token_secret)
 
 def tweet_story(story):
-    main_content = '{title}\n{url}\nSee Summary Below\n{hashtag}'.format(title=story.title, url=story.url, hashtag=story.hashtag)
-    replies = create_summary_array(story.summary)
-    last_tweet_id = ''
-    main_tweet = client.create_tweet(text=main_content)
-    last_tweet_id = main_tweet.data['id']
-    for reply in replies:
-        reply_tweet = client.create_tweet(text=reply, in_reply_to_tweet_id=last_tweet_id)
-        last_tweet_id = reply_tweet.data['id']
+    try:
+        main_content = '{title}\n{url}\nSee Summary Below\n{hashtag}'.format(title=story.title, url=story.url, hashtag=story.hashtag)
+        replies = create_summary_array(story.summary)
+        last_tweet_id = ''
+        main_tweet = client.create_tweet(text=main_content)
+        last_tweet_id = main_tweet.data['id']
+        for reply in replies:
+            reply_tweet = client.create_tweet(text=reply, in_reply_to_tweet_id=last_tweet_id)
+            last_tweet_id = reply_tweet.data['id']
+    except Exception as e:
+        print(e)
 
 
 def create_summary_array(summary):
-    max_length = 138
+    max_length = 140
     words = summary.split(' ')
     replies = ['']
     index = 0
@@ -33,8 +36,3 @@ def create_summary_array(summary):
             ## todo: check for words longer than max_length
             replies.append(word)
     return replies 
-
-def test():
-    client.create_tweet(text="test")
-
-test()

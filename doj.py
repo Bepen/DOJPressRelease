@@ -1,20 +1,21 @@
 import requests
 from story import Story
+from storage import fetch_prev_story, write_prev_story
 
 url = "https://www.justice.gov/api/v1/press_releases.json"
-pagesize = 20
 
 def find_most_recent_page():
-    response = fetch_press_releases(0)
+    response = fetch_press_releases()
 
     if (status_code(response) != 200):
         return -1
 
+    pagesize = response['metadata']['resultset']['pagesize']
     total_count = response['metadata']['resultset']['count']
 
     if (total_count % pagesize == 0):
         return total_count // pagesize - 1
-    
+
     return total_count // pagesize
 
 def get_most_recent_story():
@@ -24,16 +25,14 @@ def get_most_recent_story():
     response = fetch_press_releases(page)
     results = response['results']
     last_story_index = len(results) - 1
-    file = open("prev_story.txt", "r")
-    prev_story = file.read()
-    file.close()
+    prev_story = fetch_prev_story()
     last_story = results[last_story_index]
+    print("prev_story", prev_story)
+    print("last_story", last_story['number'])
     if (prev_story == last_story['number']):
         raise ValueError("Story already posted.")
     else:
-        file = open("prev_story.txt", "w")
-        file.write(last_story['number'])
-        file.close()
+        write_prev_story(last_story['number'])
     return Story(last_story)
 
 
@@ -41,11 +40,10 @@ def status_code(response):
     return response['metadata']['responseInfo']['status']
 
 
-def fetch_press_releases(page):
-    params = {'page': page, 'pagesize': pagesize}
-    
+def fetch_press_releases(page=0):
+    params = {}
+    if (page > 0):
+        params['page'] = page
     r = requests.get(url, params)
-    
     data = r.json()
-
     return data

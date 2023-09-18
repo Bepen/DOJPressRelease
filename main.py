@@ -7,7 +7,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def publish():
-    return check_for_stories_and_publish()
+    check_for_stories_and_publish()
+    return 'end program'
 
 
 if __name__ == "__main__":
